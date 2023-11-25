@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Block</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .code-container {
+  position: relative;
+  max-width: 600px; /* Adjust max width as needed */
+  margin: auto; /* Center the container */
+}
+
+#code {
+  width: 600px;
+  height: 400px;
+  min-height: 200px; /* Adjust height as needed */
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px; /* Rounded corners */
+  padding: 10px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.3s ease;
+  resize: vertical; /* Allow vertical resizing */
+  overflow: auto; /* Enable scrolling if content overflows */
+  background-color: white;
+}
+
+#code:hover,
+#code:focus {
+  border-color: #2196F3;
+}
+
+button {
+  display: block;
+  margin-top: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Optional: Add a dark theme for the code editor */
+.dark-theme #code {
+  background-color: #272822;
+  color: #f8f8f2;
+  border-color: #444;
+}
+
+.dark-theme #code:hover,
+.dark-theme #code:focus {
+  border-color: #66d9ef;
+}
+
+.javascript{
+    width: 300px;
+    height: 200px;
+    border: 1px solid #ccc;
+    padding: 5px;
+
+
+}
+
+
+        button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="code-container">
+    <h1>Code Block</h1>
+    <textarea id="code" class="javascript" placeholder="Type your code here..." contenteditable="true"></textarea>
+    <button id="submitButton" onclick="submitCode()">Submit Code</button>
+    <div id="mentorSection" style="display: none;">
+        <button onclick="approveCode()">Approve</button>
+        <button onclick="denyCode()">Deny</button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+        const codeElement = document.getElementById('code');
+        const submitButton = document.getElementById('submitButton');
+        const mentorButtons = document.getElementById('mentorSection');
+        const room = window.location.pathname.split('/').pop();
+        const socket = io();
+        let userRole = '';
+    document.addEventListener('DOMContentLoaded', () => {
+
+
+        socket.emit('join', room);
+
+        // Request user role from the server
+        socket.on('userRole', (role) => {
+            console.log(role)
+            if (role === 'mentor') {
+                // Display code in read-only mode for the mentor
+                console.log("role === 'mentor'");
+                codeElement.readOnly = true;
+                userRole = 'mentor';
+                                // Show mentor buttons
+                
+                // Hide student submit button
+                submitButton.style.visibility = 'hidden';
+            } else {
+                // Enable editing for students
+                codeElement.readOnly = false;
+                // saveButton.style.display = 'block';
+                // Show student submit button
+                submitButton.style.display = 'block';
+                // Hide mentor buttons
+                userRole = 'student';
+                
+            }
+            fetchCodeFromServer(room);
+        });
+
+        // Receive initial code
+        socket.on('updateCode', (code) => {
+
+            console.log('Received updated code:', code);
+            codeElement.value = code;
+        // syntax highlighting using a library like Highlight.js
+            hljs.highlightBlock(codeElement);   
+});
+
+        socket.on('codeSubmitted', () => {
+        console.log('Code submitted event received');
+        console.log('ROLE IN HERE IS: ' + userRole);
+        // Show mentor buttons when code is submitted (only for mentors)
+        if (userRole === 'mentor') {
+            console.log('IN THE IF');
+            document.getElementById('mentorSection').style.display = 'block';
+            mentorButtons.style.display = 'block';
+        }
+    });
+
+    socket.on('approveCode', ()=>{
+        approveCode();
+    });
+
+    socket.on('denyCode', ()=>{
+        denyCode();
+    });
+
+        // Listen for code changes
+        codeElement.addEventListener('input', () => {
+            console.log()
+            const newCode = codeElement.value;
+            socket.emit('codeChange', { room, code: newCode });
+        });
+    });
+
+
+
+function fetchCodeFromServer(title) {
+    // Make an API request to get the code block for the given title
+    fetch(`/api/code-blocks/${title}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Update the code element with the retrieved code
+            document.getElementById('code').textContent = data.code;
+            // If syntax highlighting library (e.g., hljs) is used, reapply highlighting
+            // hljs.highlightBlock(document.getElementById('code'));
+        })
+        .catch(error => {
+            console.error('Error fetching code:', error);
+            alert('Error fetching code. Please try again.');
+        });
+}
+
+function submitCode() {
+            // Simulate code submission
+            alert('Code submitted!');
+
+            // Show mentor section
+            console.log('EMITTTT');
+            socket.emit('codeSubmitted', room);
+        }
+
+        function approveCode() {
+            // Simulate approval
+            codeElement.style.backgroundColor = '#00cc00';
+            socket.emit('mentorResponse', {room, approve: true});
+        }
+
+        function denyCode() {
+            // Simulate denial
+            codeElement.style.backgroundColor = '#FF0000';
+            socket.emit('mentorResponse', {room, approve: false} );
+        }
+
+
+
+</script>
+</body>
+</html>
