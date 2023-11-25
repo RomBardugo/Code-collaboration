@@ -1,0 +1,10 @@
+  name = "web"
+
+  # Build command (change accordingly)
+  build = "npm install"
+
+  # Start command (change accordingly)
+  start = "npm start"
+
+  # Port that your app listens on
+  port = 3000
