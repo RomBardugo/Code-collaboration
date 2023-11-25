@@ -1,11 +1,16 @@
+[[services]]
   # Service name
   name = "web"
 
-  # Build command (change accordingly)
-  build = "npm install"
-
-  # Start command (change accordingly)
-  start = "npm run start"
-
-  # Port that your app listens on
+  # Build and start command
+  dev = false
   port = 3000
+
+  # Environment variables
+  [services.env]
+    NODE_ENV = "production"
+
+  # Health check endpoint
+  [[services.ports]]
+    external = 8080
+    internal = 8080
