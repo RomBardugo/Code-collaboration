@@ -6,7 +6,7 @@ const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const port = 3000;
+const port = 3001;
 
 
 const app = express();
@@ -31,14 +31,19 @@ res.sendFile(path.join(__dirname, 'public', 'codePage.html'));
 
 
 // Store the order of user connections
-const userConnections = [];
+let userConnections = [];
 let userRole = '';
 const map = new Map();
 // Handle socket connections
 io.on('connection', (socket) => {
     // Assign role based on the order of connection
     if (!map.has(socket.id)){
-        userRole = userConnections.length === 0 ? 'mentor' : 'student';
+        if (!userConnections.includes('mentor')){
+          userRole = 'mentor';  
+        }
+        else{
+          userRole = 'student';
+        }
         map.set(socket.id, userRole);
         console.log("map ", map);
     }
@@ -51,6 +56,12 @@ io.on('connection', (socket) => {
   
     // Emit the user role to the client
     socket.emit('userRole', userRole);
+
+    socket.on('disconnect', () => {
+      console.log('exit', map.get(socket.id));
+      userConnections = userConnections.filter(role => role !== map.get(socket.id));
+      console.log(userConnections)
+    });
   
     socket.on('join', (room) => {
         socket.join(room);
@@ -126,14 +137,14 @@ app.get('/api/code-blocks', (req, res) => {
           res.status(404).json({ error: 'Code block not found' });
         }
       }
-    });
+    });    
   });
 
 
   
 
 
-  const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT || 3001;
   server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
   });
