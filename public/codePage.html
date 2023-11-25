@@ -99,7 +99,10 @@ button {
 <body>
 
 <div class="code-container">
-    <h1>Code Block</h1>
+    <h1><u>Code Block</u></h1>
+    <h2 id="roleMentor"><u>Mentor</u></h2>
+    <h2 id="roleStudent"><u>Student</u></h2>
+
     <textarea id="code" class="javascript" placeholder="Type your code here..." contenteditable="true"></textarea>
     <button id="submitButton" onclick="submitCode()">Submit Code</button>
     <div id="mentorSection" style="display: none;">
@@ -133,6 +136,7 @@ button {
                 
                 // Hide student submit button
                 submitButton.style.visibility = 'hidden';
+                document.getElementById('roleStudent').style.visibility = 'hidden';
             } else {
                 // Enable editing for students
                 codeElement.readOnly = false;
@@ -141,6 +145,7 @@ button {
                 submitButton.style.display = 'block';
                 // Hide mentor buttons
                 userRole = 'student';
+                document.getElementById('roleMentor').style.visibility = 'hidden';
                 
             }
             fetchCodeFromServer(room);
