@@ -1,21 +1,16 @@
 # railway.toml
 
 [[services]]
-  # Service name
   name = "web"
-
-  # Build and start command
   dev = false
   port = 3000
 
-  # Start command for a basic Node.js app
+  build = "npm install"
   start = "npm start"
 
-  # Environment variables
   [services.env]
     NODE_ENV = "production"
 
-  # Health check endpoint
   [[services.ports]]
     external = 8080
     internal = 8080
