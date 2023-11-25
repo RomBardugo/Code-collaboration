@@ -1,7 +1,7 @@
   name = "web"
 
   # Build command (change accordingly)
-  build = "npm install"
+  build = "npm install && npm run build"
 
   # Start command (change accordingly)
   start = "npm start"
